@@ -14,7 +14,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
@@ -59,7 +59,12 @@ app.get("/u/:shortURL", (req,res) =>{
   res.redirect(longURL);
 });
 
-
+app.post('/urls/:id/delete', (req, res) =>{
+  console.log(urlDatabase);
+  console.log(req.params.id);
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
+});
 
 
 
