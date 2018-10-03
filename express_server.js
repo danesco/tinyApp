@@ -14,7 +14,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/urls/show");
 });
 
 app.listen(PORT, () => {
@@ -64,6 +64,15 @@ app.post('/urls/:id/delete', (req, res) =>{
   console.log(req.params.id);
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+});
+
+app.post('/urls/:id', (req, res) =>{
+  urlDatabase[req.params.id] = req.body.LongURL;
+  console.log(req.body.LongURL);
+  // console.log(urlDatabase[req.params.id]);
+  // console.log(urlDatabase);
+  // console.log(req.params.id);
+  res.redirect("/urls")
 });
 
 

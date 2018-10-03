@@ -6,6 +6,7 @@
   <header><% include partials/_header %></header>
     <% for(var i in urls){ %>
     <li><%=i %> <%= urls[i] %></li>
+    <a href="/urls/<%= i %>">Edit</a>
     <form method="POST" action="/urls/<%= i %>/delete"><button>Delete</button></form>
      <% }%>
 </body>
