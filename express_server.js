@@ -15,6 +15,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// const urlDatabase = {
+//   'b2xVn2': {
+//     shortURL: "b2xVn2",
+//     longURL: "http://www.lighthouselabs.ca",
+//     user_id: "01"
+//   },
+//   '9sm5xK': {
+//     shortURL: "9sm5xK",
+//     longURL: "http://www.google.com",
+//     user_id: "02"
+//   }
+// };
+
 const users = {
   "01": {
     id: "01",
@@ -71,7 +84,12 @@ app.get("/urls", (req,res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+    let templateVar = {
+    user: users[req.cookies["user_id"]],
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
+  };
+  res.render("urls_new", templateVar);
 });
 
 app.get("/urls/:id", (req,res)=> {
@@ -83,6 +101,7 @@ app.get("/urls/:id", (req,res)=> {
   res.render("urls_show", templateVar);
 });
 
+//creating new short urls
 app.post("/urls", (req,res) => {
   const generateURL = functions.generateRandomString();
   urlDatabase[generateURL] = req.body.longURL; //adding a new key value pairing to url database
