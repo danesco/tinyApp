@@ -29,6 +29,16 @@ const users = {
   }
 };
 
+//function for finding if the email is already in use
+function findEmail(email){
+  for(let key in users){
+    if(users[key].email === email){
+      return true;
+    }
+  }
+}
+
+
 app.get("/", (req, res) => {
   res.redirect("/urls/show");
 });
@@ -91,9 +101,6 @@ app.post('/urls/:id', (req, res) => {
 
 app.post('/login', (req,res) => {
   res.cookie('username', req.body.username);
-  console.log()
-  // console.log('Cookies: ', req.cookies, 'here',req.body.username );
-  // console.log('Signed cookes :', req.signedCookies);
   res.redirect("/urls");
 });
 
@@ -104,6 +111,26 @@ app.post('/logout', (req,res) => {
 
 app.get('/register', (req,res) => {
   res.render("register");
+});
+
+//creats new user and adds to user data base with a random id
+app.post('/register', (req,res) => {
+  const generateId = functions.generateRandomString();
+  console.log(req.body.email, req.body.password);
+  findEmail(req.body.email);
+  if(req.body.email === '' || req.body.password === ''){
+    res.status(400);
+    res.send('Must fill out Email and Password!')
+  }else if(findEmail(req.body.email) === true){
+    res.status(400);
+    res.send('Sorry that email was already taken');
+  }else{
+    const email = req.body.email;
+    const password = req.body.password;
+    users[generateId] = {id: generateId, email: email, password: password }
+    res.cookie('id', generateId);
+    res.redirect("/urls");
+  }
 });
 
 
