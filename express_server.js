@@ -64,11 +64,9 @@ app.get("/hello", (req,res) => {
 
 app.get("/urls", (req,res) => {
   let templateVar = {
-    user: users[req.cookies["id"]],
+    user: users[req.cookies["user_id"]],
     urls: urlDatabase,
-    username: req.cookies["username"]
-  };
-  console.log('i am here', templateVar);
+      };
   res.render("urls_index",templateVar);
 });
 
@@ -78,10 +76,9 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req,res)=> {
   let templateVar = {
-    user: users[req.cookies["id"]],
+    user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
-    username: req.cookies["username"]
   };
   res.render("urls_show", templateVar);
 });
@@ -109,21 +106,12 @@ app.post('/urls/:id', (req, res) => {
   res.redirect("/urls")
 });
 
-// Your existing POST /login endpoint still uses the old (username) cookie.
-
-// Modify the existing POST /login endpoint so that it uses the new form data and sets the user_id cookie on successful login.
-
-// In order to do this, the endpoint will first need to try and find a user that matches the email submitted via the login form. If a user with that e-mail cannot be found, return a response with a 403 status code.
-
-// If a user with that e-mail address is located, compare the password given in the form with the existing user's password. If it does not match, return a response with a 403 status code.
-
-// If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /.
 
 app.post('/login', (req,res) => {
   if(findEmail(req.body.email)){ //checking for valid email
     if(findPassword(req.body.password)){ //checking for valid password
       for(let i in users){
-        if(users[i].password === req.body.password)
+        if(users[i].password === req.body.password) //loopthrough users object and set correct id cookie
           res.cookie("user_id", users[i].id);
           res.redirect('/');
       }
@@ -138,7 +126,7 @@ app.post('/login', (req,res) => {
 });
 
 app.post('/logout', (req,res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -161,7 +149,7 @@ app.post('/register', (req,res) => {
     const email = req.body.email;
     const password = req.body.password;
     users[generateId] = {id: generateId, email: email, password: password }
-    res.cookie('id', generateId);
+    res.cookie('user_id', generateId);
     res.redirect("/urls");
   }
 });
@@ -170,8 +158,7 @@ app.post('/register', (req,res) => {
 app.get('/login', (req,res) => {
   let templateVars= {
     user: users[req.cookies["id"]],
-    urls: urlDatabase,
-    username: req.cookies["username"]
+    urls: urlDatabase
   }
   res.render('login', templateVars);
 });
