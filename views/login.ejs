@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>login</title>
+</head>
+<body>
+  <% if (user === undefined){ %>
+<form method="POST" action="/login">
+  <h3>Login</h3>
+  Email <input type="email" name="email">
+  Passowrd <input type="password" name="password"><button>submit</button>
+</form>
+
+<% }else { %>
+<h3><%= username %></h3>
+<form method="POST" action="/logout">
+  <button>Logout</button>
+</form>
+<% } %>
+</body>
+</html>
