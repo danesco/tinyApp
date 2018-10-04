@@ -38,7 +38,6 @@ function findEmail(email){
   }
 }
 
-
 app.get("/", (req, res) => {
   res.redirect("/urls/show");
 });
@@ -57,9 +56,11 @@ app.get("/hello", (req,res) => {
 
 app.get("/urls", (req,res) => {
   let templateVar = {
+    user: users[req.cookies["id"]],
     urls: urlDatabase,
     username: req.cookies["username"]
   };
+  console.log('i am here', templateVar);
   res.render("urls_index",templateVar);
 });
 
@@ -69,6 +70,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req,res)=> {
   let templateVar = {
+    user: users[req.cookies["id"]],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
     username: req.cookies["username"]
@@ -113,10 +115,10 @@ app.get('/register', (req,res) => {
   res.render("register");
 });
 
-//creats new user and adds to user data base with a random id
+//creats new user and adds to user data base with a random id, if empty or if email already taken returns error
 app.post('/register', (req,res) => {
   const generateId = functions.generateRandomString();
-  console.log(req.body.email, req.body.password);
+  // console.log(req.body.email, req.body.password);
   findEmail(req.body.email);
   if(req.body.email === '' || req.body.password === ''){
     res.status(400);
@@ -132,6 +134,8 @@ app.post('/register', (req,res) => {
     res.redirect("/urls");
   }
 });
+
+
 
 
 
