@@ -1,9 +1,9 @@
 <header>SHORTEN THE URL!</header>
 
 <% if (user === undefined){ %>
-<form method="POST" action="/login">
-  Login <input type="text" name="username"><button>submit</button>
-</form>
+<a href="/login"> Login</a>
+
+<a href="/register">Register</a>
 
 <% }else { %>
 <h3><%= username %></h3>
@@ -11,3 +11,8 @@
   <button>Logout</button>
 </form>
 <% } %>
+
+
+<form method="POST" action="/login">
+  Login <input type="text" name="username"><button>submit</button>
+</form>

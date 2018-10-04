@@ -19,13 +19,13 @@ const users = {
   "01": {
     id: "01",
     email: "random@gmail.com",
-    password: "Bobsaget"
+    password: "Bob"
   },
 
   "02": {
     id: "02",
     email: "another_email@gmail.com",
-    password: "okaycool"
+    password: "cool"
   }
 };
 
@@ -38,8 +38,16 @@ function findEmail(email){
   }
 }
 
+function findPassword(password){
+  for(let key in users){
+    if(users[key].password === password){
+      return true;
+    }
+  }
+}
+
 app.get("/", (req, res) => {
-  res.redirect("/urls/show");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
@@ -101,9 +109,32 @@ app.post('/urls/:id', (req, res) => {
   res.redirect("/urls")
 });
 
+// Your existing POST /login endpoint still uses the old (username) cookie.
+
+// Modify the existing POST /login endpoint so that it uses the new form data and sets the user_id cookie on successful login.
+
+// In order to do this, the endpoint will first need to try and find a user that matches the email submitted via the login form. If a user with that e-mail cannot be found, return a response with a 403 status code.
+
+// If a user with that e-mail address is located, compare the password given in the form with the existing user's password. If it does not match, return a response with a 403 status code.
+
+// If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /.
+
 app.post('/login', (req,res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
+  if(findEmail(req.body.email)){ //checking for valid email
+    if(findPassword(req.body.password)){ //checking for valid password
+      for(let i in users){
+        if(users[i].password === req.body.password)
+          res.cookie("user_id", users[i].id);
+          res.redirect('/');
+      }
+    }else{
+      res.status(403);
+      res.send("Not the right password");
+    }
+  }else{
+    res.status(403);
+    res.send("Enter a real email bud");
+  }
 });
 
 app.post('/logout', (req,res) => {
@@ -135,6 +166,15 @@ app.post('/register', (req,res) => {
   }
 });
 
+//create a get login that returns a new login page
+app.get('/login', (req,res) => {
+  let templateVars= {
+    user: users[req.cookies["id"]],
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  }
+  res.render('login', templateVars);
+});
 
 
 
