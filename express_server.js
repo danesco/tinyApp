@@ -15,6 +15,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "01": {
+    id: "01",
+    email: "random@gmail.com",
+    password: "Bobsaget"
+  },
+
+  "02": {
+    id: "02",
+    email: "another_email@gmail.com",
+    password: "okaycool"
+  }
+};
+
 app.get("/", (req, res) => {
   res.redirect("/urls/show");
 });
@@ -88,6 +102,9 @@ app.post('/logout', (req,res) => {
   res.redirect("/urls");
 });
 
+app.get('/register', (req,res) => {
+  res.render("register");
+});
 
 
 
