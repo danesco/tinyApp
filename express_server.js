@@ -15,8 +15,39 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "01": {
+    id: "01",
+    email: "random@gmail.com",
+    password: "Bob"
+  },
+
+  "02": {
+    id: "02",
+    email: "another_email@gmail.com",
+    password: "cool"
+  }
+};
+
+//function for finding if the email is already in use
+function findEmail(email){
+  for(let key in users){
+    if(users[key].email === email){
+      return true;
+    }
+  }
+}
+
+function findPassword(password){
+  for(let key in users){
+    if(users[key].password === password){
+      return true;
+    }
+  }
+}
+
 app.get("/", (req, res) => {
-  res.redirect("/urls/show");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
@@ -33,9 +64,9 @@ app.get("/hello", (req,res) => {
 
 app.get("/urls", (req,res) => {
   let templateVar = {
+    user: users[req.cookies["user_id"]],
     urls: urlDatabase,
-    username: req.cookies["username"]
-  };
+      };
   res.render("urls_index",templateVar);
 });
 
@@ -45,9 +76,9 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req,res)=> {
   let templateVar = {
+    user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
-    username: req.cookies["username"]
   };
   res.render("urls_show", templateVar);
 });
@@ -75,17 +106,61 @@ app.post('/urls/:id', (req, res) => {
   res.redirect("/urls")
 });
 
+
 app.post('/login', (req,res) => {
-  res.cookie('username', req.body.username);
-  console.log()
-  // console.log('Cookies: ', req.cookies, 'here',req.body.username );
-  // console.log('Signed cookes :', req.signedCookies);
-  res.redirect("/urls");
+  if(findEmail(req.body.email)){ //checking for valid email
+    if(findPassword(req.body.password)){ //checking for valid password
+      for(let i in users){
+        if(users[i].password === req.body.password) //loopthrough users object and set correct id cookie
+          res.cookie("user_id", users[i].id);
+          res.redirect('/');
+      }
+    }else{
+      res.status(403);
+      res.send("Not the right password");
+    }
+  }else{
+    res.status(403);
+    res.send("Enter a real email bud");
+  }
 });
 
 app.post('/logout', (req,res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
+});
+
+app.get('/register', (req,res) => {
+  res.render("register");
+});
+
+//creats new user and adds to user data base with a random id, if empty or if email already taken returns error
+app.post('/register', (req,res) => {
+  const generateId = functions.generateRandomString();
+  // console.log(req.body.email, req.body.password);
+  findEmail(req.body.email);
+  if(req.body.email === '' || req.body.password === ''){
+    res.status(400);
+    res.send('Must fill out Email and Password!')
+  }else if(findEmail(req.body.email) === true){
+    res.status(400);
+    res.send('Sorry that email was already taken');
+  }else{
+    const email = req.body.email;
+    const password = req.body.password;
+    users[generateId] = {id: generateId, email: email, password: password }
+    res.cookie('user_id', generateId);
+    res.redirect("/urls");
+  }
+});
+
+//create a get login that returns a new login page
+app.get('/login', (req,res) => {
+  let templateVars= {
+    user: users[req.cookies["id"]],
+    urls: urlDatabase
+  }
+  res.render('login', templateVars);
 });
 
 
