@@ -165,6 +165,8 @@ app.post('/login', (req,res) => {
       req.session.user_id = correctUser.id;
       // res.cookie('user_id', correctUser.id);
       res.redirect('/');
+    }else{
+      res.send('Sorry wrong email');
     }
   }else{
     res.status(403);
@@ -174,7 +176,7 @@ app.post('/login', (req,res) => {
 });
 
 app.post('/logout', (req,res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/urls");
 });
 

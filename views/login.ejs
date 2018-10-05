@@ -4,6 +4,7 @@
   <title>login</title>
 </head>
 <body>
+  <form method="GET" action="/urls"><button>Home</button></form>
   <% if (user === undefined){ %>
 <form method="POST" action="/login">
   <h3>Login</h3>
@@ -12,7 +13,7 @@
 </form>
 
 <% }else { %>
-<h3><%= username %></h3>
+<h3><%= user.email %></h3>
 <form method="POST" action="/logout">
   <button>Logout</button>
 </form>
