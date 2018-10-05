@@ -82,8 +82,7 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req,res) => {
   let updatedDatabase = urlsForUser(req.session.user_id);
-  // console.log("THE USER URLS ",updatedDatabase);
-
+  console.log(updatedDatabase, req.session.user_id)
   let templateVar = {
     user: users[req.session.user_id],
     urls: updatedDatabase
@@ -138,6 +137,7 @@ app.post("/urls", (req,res) => {
 app.get("/u/:shortURL", (req,res) => {
   let shortURL = req.params.shortURL;
   let longURL = urlDatabase[shortURL].longURL; //redirect to the long url from the short url through the req object => params object => and the short url that you get from res.
+  console.log(longURL, shortURL, urlDatabase);
   res.redirect(longURL);
 });
 
@@ -166,7 +166,7 @@ app.post('/login', (req,res) => {
       // res.cookie('user_id', correctUser.id);
       res.redirect('/');
     }else{
-      res.send('Sorry wrong email');
+      res.send('Sorry wrong Password');
     }
   }else{
     res.status(403);
@@ -199,8 +199,7 @@ app.post('/register', (req,res) => {
     const password = bcrypt.hashSync(req.body.password, 10);
     users[generateId] = {id: generateId, email: email, password: password }
     console.log(users);
-    req.session.user_id = 'generateId';
-    // res.cookie('user_id', generateId);
+    req.session.user_id = generateId;
     res.redirect("/urls");
   }
 });
