@@ -10,23 +10,23 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extebded: true}));
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
 // const urlDatabase = {
-//   'b2xVn2': {
-//     shortURL: "b2xVn2",
-//     longURL: "http://www.lighthouselabs.ca",
-//     user_id: "01"
-//   },
-//   '9sm5xK': {
-//     shortURL: "9sm5xK",
-//     longURL: "http://www.google.com",
-//     user_id: "02"
-//   }
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
 // };
+
+const urlDatabase = {
+  'b2xVn2': {
+    shortURL: "b2xVn2",
+    longURL: "http://www.lighthouselabs.ca",
+    userId: "01"
+  },
+  '9sm5xK': {
+    shortURL: "9sm5xK",
+    longURL: "http://www.google.com",
+    userId: "02"
+  }
+};
 
 const users = {
   "01": {
@@ -41,6 +41,17 @@ const users = {
     password: "cool"
   }
 };
+
+//function for returning correct urls
+function urlsForUser(id){
+  userUrls = {}
+  for(let url in urlDatabase){
+    if(urlDatabase[url].userId === id){
+      userUrls.url = urlDatabase[url];
+    }
+  }
+  return userUrls;
+}
 
 //function for finding if the email is already in use
 function findEmail(email){
@@ -71,40 +82,52 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req,res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get("/hello", (req,res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 app.get("/urls", (req,res) => {
+  let updatedDatabase = urlsForUser(req.cookies["user_id"]);
   let templateVar = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase,
+    urls: updatedDatabase
       };
   res.render("urls_index",templateVar);
 });
 
+//should redirect to login page if user not logged in
 app.get("/urls/new", (req, res) => {
     let templateVar = {
     user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
   };
-  res.render("urls_new", templateVar);
+  if(req.cookies['user_id'] === undefined){
+    res.redirect('/login');
+  }else{
+    res.render("urls_new", templateVar);
+  }
 });
 
 app.get("/urls/:id", (req,res)=> {
   let templateVar = {
+    urls: urlDatabase,
     user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
+    longURL: urlDatabase[req.params.id].longURL //grabbing the long url by accesing the id value from the req and params obj
   };
+  // console.log("HERE: ", urlDatabase[req.params.id].longURL);
   res.render("urls_show", templateVar);
 });
 
 //creating new short urls
 app.post("/urls", (req,res) => {
   const generateURL = functions.generateRandomString();
-  urlDatabase[generateURL] = req.body.longURL; //adding a new key value pairing to url database
+  urlDatabase[generateURL] = {
+    shortURL: generateURL,
+    longURL: req.body.longURL,
+    userId: req.cookies.user_id
+  }
   res.redirect(`/urls/${generateURL}`);
 });
 
@@ -114,14 +137,15 @@ app.get("/u/:shortURL", (req,res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  console.log(urlDatabase);
-  console.log(req.params.id);
+  // console.log(urlDatabase);
+  // console.log(req.params.id);
+  // console.log(user.id, req.cookies["user_id"]);
   delete urlDatabase[req.params.id]; // this deletes urls
   res.redirect("/urls");
 });
 
 app.post('/urls/:id', (req, res) => {
-  urlDatabase[req.params.id] = req.body.LongURL; //this updates urls
+  urlDatabase[req.params.id].longURL = req.body.LongURL; //this updates urls
   res.redirect("/urls")
 });
 
@@ -156,7 +180,6 @@ app.get('/register', (req,res) => {
 //creats new user and adds to user data base with a random id, if empty or if email already taken returns error
 app.post('/register', (req,res) => {
   const generateId = functions.generateRandomString();
-  // console.log(req.body.email, req.body.password);
   findEmail(req.body.email);
   if(req.body.email === '' || req.body.password === ''){
     res.status(400);

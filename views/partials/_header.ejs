@@ -1,4 +1,4 @@
-<header>SHORTEN THE URL!</header>
+<header><h1>SHORTEN THE URL!</h1></header>
 
 <% if (user === undefined){ %>
 <a href="/login"> Login</a>
@@ -6,7 +6,7 @@
 <a href="/register">Register</a>
 
 <% }else { %>
-<h3><%= user.username %></h3>
+<h3><%= user.email %></h3>
 <form method="POST" action="/logout">
   <button>Logout</button>
 </form>

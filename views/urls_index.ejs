@@ -5,10 +5,11 @@
 <body>
   <header><% include partials/_header %></header>
     <% for(var i in urls){ %>
-    <li><%=i %> <%= urls[i] %></li>
+    <li><%=i %> <%= urls[i].longURL %></li>
     <a href="/urls/<%= i %>">Edit</a>
     <form method="POST" action="/urls/<%= i %>/delete"><button>Delete</button></form>
      <% }%>
     <form method="GET" action="/urls/new"></form><a href="/urls/new">Shorten Urls</a>
+    <%= JSON.stringify(urls) %>
 </body>
 </html>
