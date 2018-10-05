@@ -11,10 +11,6 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extebded: true}));
 
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 var urlDatabase = {
   'b2xVn2': {
@@ -33,13 +29,13 @@ var users = {
   "01": {
     id: "01",
     email: "random@gmail.com",
-    password: "bob"
+    password: bcrypt.hashSync("bob", 10)
   },
 
   "02": {
     id: "02",
     email: "another_email@gmail.com",
-    password: "cool"
+    password: bcrypt.hashSync("cool", 10)
   }
 };
 
@@ -48,12 +44,10 @@ function urlsForUser(id){
 
   let userUrls = {}
   for(let url in urlDatabase){
-    console.log(url);
     if(urlDatabase[url].userId === id){
       userUrls[url] = urlDatabase[url];
     }
   }
-  //console.log("RETURING USER URLS ", userUrls);
   return userUrls;
 }
 
@@ -61,10 +55,9 @@ function urlsForUser(id){
 function findEmail(email){
   for(let key in users){
     if(users[key].email === email){
-      userEmail = email;
+      return true;
     }
   }
-  return true;
 }
 
 function findPassword(password){
@@ -87,9 +80,6 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// app.get("/hello", (req,res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
 
 app.get("/urls", (req,res) => {
   let updatedDatabase = urlsForUser(req.cookies["user_id"]);
@@ -117,7 +107,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 
-// HERE
+
 app.get("/urls/:id", (req,res)=> {
   if(req.cookies["user_id"] === urlDatabase[req.params.id].userId){ //making sure user has access to the url
     let templateVar = {
@@ -126,7 +116,6 @@ app.get("/urls/:id", (req,res)=> {
       shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL
     };
-    // console.log("HERE: ", urlDatabase[req.params.id].longURL);
     res.render("urls_show", templateVar);
   }else{
     res.status(403);
@@ -143,7 +132,6 @@ app.post("/urls", (req,res) => {
     longURL: req.body.longURL,
     userId: req.cookies.user_id
   }
-  // console.log("We are in the post urls. After new url:", urlDatabase);
   res.redirect(`/urls/${generateURL}`);
   //res.redirect('/urls');
 });
@@ -155,9 +143,6 @@ app.get("/u/:shortURL", (req,res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  // console.log(urlDatabase);
-  // console.log(req.params.id);
-  // console.log(user.id, req.cookies["user_id"]);
   delete urlDatabase[req.params.id]; // this deletes urls
   res.redirect("/urls");
 });
@@ -170,15 +155,17 @@ app.post('/urls/:id', (req, res) => {
 
 app.post('/login', (req,res) => {
 
-  let correctUser = false
+  let correctUser = false;
   for (let user in users) {
     if (users[user].email === req.body.email) {
       correctUser = users[user]
     }
   }
-  if (correctUser.password === req.body.password){
-    res.cookie('user_id', correctUser.id);
-    res.redirect('/');
+  if(correctUser){
+    if (bcrypt.compareSync(req.body.password, correctUser.password)){
+      res.cookie('user_id', correctUser.id);
+      res.redirect('/');
+    }
   }else{
     res.status(403);
     res.send("The email or password you entered is incrorect");
@@ -209,10 +196,10 @@ app.post('/register', (req,res) => {
     const email = req.body.email;
     const password = bcrypt.hashSync(req.body.password, 10);
     users[generateId] = {id: generateId, email: email, password: password }
+    console.log(users);
     res.cookie('user_id', generateId);
     res.redirect("/urls");
   }
-  // console.log(users);
 });
 
 //create a get login that returns a new login page
