@@ -2,9 +2,15 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const functions = require('./generateURL'); //importing functions
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-app.use(cookieParser());
+const cookieSession = require('cookie-session');
+// app.use(cookieParser());
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ["DAN"],
+}))
 
 app.set("view engine", "ejs");
 
@@ -60,13 +66,6 @@ function findEmail(email){
   }
 }
 
-function findPassword(password){
-  for(let key in users){
-    if(users[key].password === password){
-      return true;
-    }
-  }
-}
 
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -82,11 +81,11 @@ app.get("/urls.json", (req, res) => {
 
 
 app.get("/urls", (req,res) => {
-  let updatedDatabase = urlsForUser(req.cookies["user_id"]);
+  let updatedDatabase = urlsForUser(req.session.user_id);
   // console.log("THE USER URLS ",updatedDatabase);
 
   let templateVar = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     urls: updatedDatabase
       };
   res.render("urls_index",templateVar);
@@ -95,11 +94,11 @@ app.get("/urls", (req,res) => {
 //should redirect to login page if user not logged in
 app.get("/urls/new", (req, res) => {
     let templateVar = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id], //grabbing the long url by accesing the id value from the req and params obj
   };
-  if(req.cookies['user_id'] === undefined){
+  if(req.session.user_id === undefined){
     res.redirect('/login');
   }else{
     res.render("urls_new", templateVar);
@@ -109,10 +108,10 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls/:id", (req,res)=> {
-  if(req.cookies["user_id"] === urlDatabase[req.params.id].userId){ //making sure user has access to the url
+  if(req.session.user_id === urlDatabase[req.params.id].userId){ //making sure user has access to the url
     let templateVar = {
       urls: urlDatabase,
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
       shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL
     };
@@ -130,7 +129,7 @@ app.post("/urls", (req,res) => {
   urlDatabase[generateURL] = {
     shortURL: generateURL,
     longURL: req.body.longURL,
-    userId: req.cookies.user_id
+    userId: req.session.user_id
   }
   res.redirect(`/urls/${generateURL}`);
   //res.redirect('/urls');
@@ -163,7 +162,8 @@ app.post('/login', (req,res) => {
   }
   if(correctUser){
     if (bcrypt.compareSync(req.body.password, correctUser.password)){
-      res.cookie('user_id', correctUser.id);
+      req.session.user_id = correctUser.id;
+      // res.cookie('user_id', correctUser.id);
       res.redirect('/');
     }
   }else{
@@ -197,7 +197,8 @@ app.post('/register', (req,res) => {
     const password = bcrypt.hashSync(req.body.password, 10);
     users[generateId] = {id: generateId, email: email, password: password }
     console.log(users);
-    res.cookie('user_id', generateId);
+    req.session.user_id = 'generateId';
+    // res.cookie('user_id', generateId);
     res.redirect("/urls");
   }
 });
@@ -205,7 +206,7 @@ app.post('/register', (req,res) => {
 //create a get login that returns a new login page
 app.get('/login', (req,res) => {
   let templateVars= {
-    user: users[req.cookies["id"]],
+    user: users[req.session.user_id],
     urls: urlDatabase
   }
   res.render('login', templateVars);
