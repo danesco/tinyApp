@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const functions = require('./generateURL'); //importing functions
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 app.use(cookieParser());
 
 app.set("view engine", "ejs");
@@ -60,9 +61,10 @@ function urlsForUser(id){
 function findEmail(email){
   for(let key in users){
     if(users[key].email === email){
-      return true;
+      userEmail = email;
     }
   }
+  return true;
 }
 
 function findPassword(password){
@@ -91,7 +93,7 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req,res) => {
   let updatedDatabase = urlsForUser(req.cookies["user_id"]);
-  console.log("THE USER URLS ",updatedDatabase);
+  // console.log("THE USER URLS ",updatedDatabase);
 
   let templateVar = {
     user: users[req.cookies["user_id"]],
@@ -141,7 +143,7 @@ app.post("/urls", (req,res) => {
     longURL: req.body.longURL,
     userId: req.cookies.user_id
   }
-  console.log("We are in the post urls. After new url:", urlDatabase);
+  // console.log("We are in the post urls. After new url:", urlDatabase);
   res.redirect(`/urls/${generateURL}`);
   //res.redirect('/urls');
 });
@@ -167,21 +169,21 @@ app.post('/urls/:id', (req, res) => {
 
 
 app.post('/login', (req,res) => {
-  if(findEmail(req.body.email)){ //checking for valid email
-    if(findPassword(req.body.password)){ //checking for valid password
-      for(let i in users){
-        if(users[i].password === req.body.password) //loopthrough users object and set correct id cookie
-          res.cookie("user_id", users[i].id);
-          res.redirect('/');
-      }
-    }else{
-      res.status(403);
-      res.send("Not the right password");
+
+  let correctUser = false
+  for (let user in users) {
+    if (users[user].email === req.body.email) {
+      correctUser = users[user]
     }
+  }
+  if (correctUser.password === req.body.password){
+    res.cookie('user_id', correctUser.id);
+    res.redirect('/');
   }else{
     res.status(403);
-    res.send("Enter a real email bud");
+    res.send("The email or password you entered is incrorect");
   }
+
 });
 
 app.post('/logout', (req,res) => {
@@ -205,11 +207,12 @@ app.post('/register', (req,res) => {
     res.send('Sorry that email was already taken');
   }else{
     const email = req.body.email;
-    const password = req.body.password;
+    const password = bcrypt.hashSync(req.body.password, 10);
     users[generateId] = {id: generateId, email: email, password: password }
     res.cookie('user_id', generateId);
     res.redirect("/urls");
   }
+  // console.log(users);
 });
 
 //create a get login that returns a new login page
