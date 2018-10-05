@@ -7,5 +7,6 @@
     <%= shortURL %> <%= longURL %>
     <form method="POST" action="/urls/<%= shortURL %>">
       <input type="text" name="LongURL"><button>Edit</button></form>
+      <form method="GET" action="/urls"></form><a href="/urls">Go to Urls</a>
 </body>
 </html>
