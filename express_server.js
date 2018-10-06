@@ -2,10 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const functions = require('./generateURL'); //importing functions
-// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-// app.use(cookieParser());
 
 app.use(cookieSession({
   name: 'session',
@@ -106,7 +104,7 @@ app.get("/urls/new", (req, res) => {
 
 
 
-app.get("/urls/:id", (req,res)=> {
+app.get("/urls/:id", (req,res) => {
   if(req.session.user_id === urlDatabase[req.params.id].userId){ //making sure user has access to the url
     let templateVar = {
       urls: urlDatabase,
@@ -137,7 +135,6 @@ app.post("/urls", (req,res) => {
 app.get("/u/:shortURL", (req,res) => {
   let shortURL = req.params.shortURL;
   let longURL = urlDatabase[shortURL].longURL; //redirect to the long url from the short url through the req object => params object => and the short url that you get from res.
-  console.log(longURL, shortURL, urlDatabase);
   res.redirect(longURL);
 });
 
@@ -198,7 +195,6 @@ app.post('/register', (req,res) => {
     const email = req.body.email;
     const password = bcrypt.hashSync(req.body.password, 10);
     users[generateId] = {id: generateId, email: email, password: password }
-    console.log(users);
     req.session.user_id = generateId;
     res.redirect("/urls");
   }
