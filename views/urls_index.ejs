@@ -1,11 +1,12 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 <body>
   <header><% include partials/_header %></header>
     <% for(var i in urls){ %>
-    <li><%= urls[i].shortURL %> <%= urls[i].longURL %></li>
+   <a href=<%=urls[i].longURL %>> <li><%= urls[i].shortURL %> </a> <%= urls[i].longURL %></li>
     <a href="/urls/<%= urls[i].shortURL %>"><button>Edit</button></a>
       <form method="POST" action="/urls/<%= urls[i].shortURL %>/delete">
         <button type="submit">Delete</button>

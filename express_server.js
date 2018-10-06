@@ -129,7 +129,6 @@ app.post("/urls", (req,res) => {
     userId: req.session.user_id
   }
   res.redirect(`/urls/${generateURL}`);
-  //res.redirect('/urls');
 });
 
 app.get("/u/:shortURL", (req,res) => {
